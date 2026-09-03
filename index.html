@@ -1,0 +1,1565 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Commercial Pricing & Valuation Dynamic Model</title>
+  <!-- Tailwind CSS & Chart.js CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              400: '#38bdf8',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+              800: '#075985',
+              900: '#0c4a6e',
+            },
+            dark: {
+              800: '#1e293b',
+              850: '#131d2e',
+              900: '#0f172a',
+              950: '#080c14',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    input[type=range] { accent-color: #0ea5e9; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+    /* ==========================================================================
+       EXECUTIVE 1-PAGE PDF PROPOSAL PRINT ENGINE (@media print)
+       ========================================================================== */
+    @media print {
+      @page {
+        size: A4 portrait;
+        margin: 6mm 8mm 6mm 8mm;
+      }
+      *, *::before, *::after {
+        box-shadow: none !important;
+        text-shadow: none !important;
+      }
+      html, body {
+        background-color: #080c14 !important;
+        color: #ffffff !important;
+        font-size: 8.5pt !important;
+        line-height: 1.25 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      header, aside, footer, .no-print,
+      #pane-pnl, #pane-ratecard, #pane-montecarlo,
+      #chartBreakEven, #chartCostStructure, #section-overhead-model {
+        display: none !important;
+      }
+
+      .max-w-\[1600px\], main, #pane-dashboard {
+        max-width: 100% !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        display: block !important;
+      }
+
+      #print-executive-header {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: flex-start !important;
+        border-bottom: 2px solid #0284c7 !important;
+        padding-bottom: 6px !important;
+        margin-bottom: 10px !important;
+      }
+
+      .print-kpi-grid {
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 6px !important;
+        margin-bottom: 10px !important;
+      }
+      .print-kpi-card {
+        border: 1px solid #1e293b !important;
+        background-color: #0f172a !important;
+        border-radius: 6px !important;
+        padding: 6px 8px !important;
+      }
+      .print-kpi-card span {
+        color: #94a3b8 !important;
+        font-size: 7pt !important;
+      }
+      .print-kpi-card .val {
+        color: #ffffff !important;
+        font-size: 11.5pt !important;
+        font-weight: 800 !important;
+        font-family: 'JetBrains Mono', monospace !important;
+      }
+
+      #table-cost-container {
+        border: 1px solid #1e293b !important;
+        background-color: #0f172a !important;
+        border-radius: 6px !important;
+        margin-bottom: 10px !important;
+        overflow: hidden !important;
+      }
+      table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        font-size: 7.8pt !important;
+      }
+      thead th {
+        background-color: #131d2e !important;
+        color: #38bdf8 !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.05em !important;
+        border-bottom: 1.5px solid #1e293b !important;
+        padding: 5px 8px !important;
+      }
+      tbody td {
+        border-bottom: 1px solid #1e293b !important;
+        color: #ffffff !important;
+        padding: 4.5px 8px !important;
+      }
+      .table-text-main {
+        color: #ffffff !important;
+        font-weight: 600 !important;
+      }
+      .table-val-bold {
+        color: #ffffff !important;
+        font-weight: 700 !important;
+      }
+      .table-val-accent {
+        color: #38bdf8 !important;
+        font-weight: 600 !important;
+      }
+      .table-val-muted {
+        color: #cbd5e1 !important;
+      }
+      .badge-print {
+        background-color: #1e293b !important;
+        color: #e2e8f0 !important;
+        border: 1px solid #334155 !important;
+        padding: 1px 4px !important;
+        border-radius: 3px !important;
+        font-size: 6.5pt !important;
+      }
+
+      #print-commercial-options {
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 6px !important;
+        margin-bottom: 10px !important;
+      }
+      .print-rate-box {
+        border: 1px solid #1e293b !important;
+        background-color: #0f172a !important;
+        border-radius: 6px !important;
+        padding: 7px !important;
+      }
+      .print-rate-box b {
+        color: #ffffff !important;
+      }
+      .print-rate-box span {
+        color: #94a3b8 !important;
+      }
+
+      #print-signoff-block {
+        display: flex !important;
+        justify-content: space-between !important;
+        margin-top: 10px !important;
+        padding-top: 8px !important;
+        border-top: 1px dashed #334155 !important;
+      }
+    }
+  </style>
+</head>
+<body class="bg-dark-950 text-white min-h-screen flex flex-col antialiased selection:bg-brand-500 selection:text-white">
+
+  <!-- Printable-Only Executive Proposal Header -->
+  <div id="print-executive-header" class="hidden">
+    <div>
+      <div class="flex items-center gap-2">
+        <span class="px-2 py-0.5 rounded bg-brand-600 text-white font-bold text-xs tracking-wider">TENDER PROPOSAL</span>
+        <h1 class="text-base font-extrabold text-white uppercase tracking-tight">Commercial Feasibility & Cost Model</h1>
+      </div>
+      <p class="text-[10px] text-slate-300 mt-0.5 font-medium">Activity-Based Costing, Statutory Burden Absorption & 3Y Feasibility Schedule</p>
+    </div>
+    <div class="text-right text-[9.5px] font-mono text-slate-300 leading-tight">
+      <div>Ref: <b class="text-brand-400">FM-BID-2026-V1.3</b></div>
+      <div>Date: <b id="print-date" class="text-white"></b></div>
+      <div>Status: <span class="text-emerald-400 font-bold uppercase">Commercial Baseline</span></div>
+    </div>
+  </div>
+
+  <!-- Top Navigation Header -->
+  <header class="bg-dark-900 border-b border-slate-800 px-6 py-3.5 sticky top-0 z-50 flex flex-wrap items-center justify-between gap-4 shadow-xl no-print">
+    <div class="flex items-center space-x-3">
+      <div class="w-10 h-10 rounded-lg bg-brand-600 flex items-center justify-center font-bold text-white shadow-lg shadow-brand-500/20">
+        CF
+      </div>
+      <div>
+        <h1 class="text-base font-bold tracking-tight text-white flex items-center gap-2">
+          Commercial Valuation & Tender Costing Model
+          <span class="text-xs font-mono font-medium px-2 py-0.5 rounded bg-brand-500/10 text-brand-400 border border-brand-500/20">v1.3 Dynamic</span>
+        </h1>
+        <p class="text-xs text-slate-300">Institutional Pricing Engine, Labor Cost Engineering & 3-Year DCF Risk Simulation</p>
+      </div>
+    </div>
+    
+    <div class="flex flex-wrap items-center gap-2.5">
+      <div class="flex bg-dark-850 p-1 rounded-lg border border-slate-800 text-xs font-medium">
+        <button onclick="switchTab('dashboard')" id="tab-btn-dashboard" class="px-3 py-1.5 rounded-md bg-brand-600 text-white shadow transition-all">Executive Summary</button>
+        <button onclick="switchTab('pnl')" id="tab-btn-pnl" class="px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 transition-all">3Y Financials & DCF</button>
+        <button onclick="switchTab('ratecard')" id="tab-btn-ratecard" class="px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 transition-all">Commercial Rate Card</button>
+        <button onclick="switchTab('montecarlo')" id="tab-btn-montecarlo" class="px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 transition-all">Monte Carlo Risk</button>
+      </div>
+
+      <a href="assets/Commercial_Tender_Executive_Proposal.pdf" 
+         target="_blank"
+         class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-200 hover:text-white bg-dark-850 hover:bg-slate-800 border border-slate-700 shadow transition">
+        <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+        </svg>
+        Executive Proposal (.pdf)
+      </a>
+
+      <a href="assets/Commercial_Pricing_Valuation_Model_v1.3.xlsx" 
+         download="Commercial_Pricing_Valuation_Model_v1.3.xlsx"
+         class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-200 hover:text-white bg-dark-850 hover:bg-slate-800 border border-slate-700 shadow transition">
+        <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+        </svg>
+        Cost Engine (.xlsx)
+      </a>
+
+      <button onclick="triggerPrintProposal()" class="text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 px-3.5 py-1.5 rounded-lg border border-emerald-500/40 shadow-lg shadow-emerald-600/20 transition flex items-center gap-1.5">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+        </svg>
+        Print Scenario
+      </button>
+
+      <button onclick="resetDefaults()" class="text-xs text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-lg border border-slate-700 transition">
+        Reset
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <div class="flex-1 max-w-[1600px] w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <!-- Left Control Panel (3 cols) -->
+    <aside class="lg:col-span-3 space-y-5 bg-dark-900/90 backdrop-blur rounded-2xl p-5 border border-slate-800 shadow-2xl h-fit no-print">
+      
+      <!-- Scenario Presets Section -->
+      <div class="space-y-2.5 pb-4 border-b border-slate-800">
+        <span class="text-xs font-bold text-brand-400 uppercase tracking-wider block flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"></path></svg>
+          Scenario Presets
+        </span>
+        <div class="grid grid-cols-3 gap-1.5">
+          <button onclick="applyPreset('aggressive')" id="btn-pre-aggressive" class="px-2 py-1.5 rounded-lg bg-dark-850 hover:bg-slate-800 text-[11px] font-medium text-slate-200 border border-slate-700/80 hover:text-white transition text-center leading-tight">
+            Aggressive Bid
+          </button>
+          <button onclick="applyPreset('conservative')" id="btn-pre-conservative" class="px-2 py-1.5 rounded-lg bg-dark-850 hover:bg-slate-800 text-[11px] font-medium text-slate-200 border border-slate-700/80 hover:text-white transition text-center leading-tight">
+            Conservative
+          </button>
+          <button onclick="applyPreset('defense')" id="btn-pre-defense" class="px-2 py-1.5 rounded-lg bg-dark-850 hover:bg-slate-800 text-[11px] font-medium text-slate-200 border border-slate-700/80 hover:text-white transition text-center leading-tight">
+            Inflation Def.
+          </button>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+        <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+          <svg class="w-4 h-4 text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+          Dynamic Parameters
+        </h2>
+        <span class="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">Reactive</span>
+      </div>
+
+      <!-- Pricing Slicer -->
+      <div class="space-y-2">
+        <div class="flex justify-between text-xs">
+          <span class="text-slate-200 font-medium">Monthly Selling Price (EGP)</span>
+          <span id="lbl-price" class="font-mono text-brand-400 font-semibold">930,000</span>
+        </div>
+        <input type="range" id="inp-price" min="500000" max="1500000" step="5000" value="930000" class="w-full h-1.5 bg-slate-700 rounded-lg cursor-pointer">
+      </div>
+
+      <!-- Headcount Slicers -->
+      <div class="space-y-3 pt-2 border-t border-slate-800/80">
+        <span class="text-xs font-semibold text-slate-300 uppercase tracking-wider block">Operational Headcount</span>
+        
+        <div class="space-y-1">
+          <div class="flex justify-between text-xs">
+            <span class="text-slate-200">Cleaners (Workers)</span>
+            <span id="lbl-cleaners" class="font-mono text-white font-medium">36 (+6 Relief = 42)</span>
+          </div>
+          <input type="range" id="inp-cleaners" min="6" max="120" step="3" value="36" class="w-full h-1.5 bg-slate-700 rounded-lg cursor-pointer">
+        </div>
+
+        <div class="space-y-1">
+          <div class="flex justify-between text-xs">
+            <span class="text-slate-200">Supervisors</span>
+            <span id="lbl-supervisors" class="font-mono text-white font-medium">5 (+1 Relief = 6)</span>
+          </div>
+          <input type="range" id="inp-supervisors" min="1" max="20" step="1" value="5" class="w-full h-1.5 bg-slate-700 rounded-lg cursor-pointer">
+        </div>
+
+        <div class="space-y-1">
+          <div class="flex justify-between text-xs">
+            <span class="text-slate-200">Site Managers</span>
+            <span id="lbl-managers" class="font-mono text-white font-medium">1</span>
+          </div>
+          <input type="range" id="inp-managers" min="0" max="5" step="1" value="1" class="w-full h-1.5 bg-slate-700 rounded-lg cursor-pointer">
+        </div>
+      </div>
+
+      <!-- Statutory & Policy Slicers -->
+      <div class="space-y-3 pt-2 border-t border-slate-800/80">
+        <span class="text-xs font-semibold text-slate-300 uppercase tracking-wider block">Burdens & Policy</span>
+        
+        <div>
+          <label class="text-xs text-slate-200 block mb-1">Social Insurance Base</label>
+          <select id="sel-insurance" class="w-full bg-dark-850 border border-slate-700 text-xs rounded-lg p-2 text-white focus:outline-none focus:border-brand-500">
+            <option value="full" selected>Option 1: Full Basic Salary Level</option>
+            <option value="min">Option 2: Statutory Min Cap (2,700 EGP Base)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="text-xs text-slate-200 block mb-1">Overhead Allocation Mode</label>
+          <select id="sel-overhead" class="w-full bg-dark-850 border border-slate-700 text-xs rounded-lg p-2 text-white focus:outline-none focus:border-brand-500">
+            <option id="opt-overhead-rev" value="revenue" selected>Method 1: Revenue Weighted % (EGP 35,178)</option>
+            <option id="opt-overhead-hours" value="hours">Method 2: Operational Labor Hours (EGP 19,977)</option>
+          </select>
+        </div>
+
+        <div class="flex items-center justify-between text-xs pt-1">
+          <span class="text-slate-200">24/7 Relief Coverage (+16.6%)</span>
+          <input type="checkbox" id="chk-relief" checked class="w-4 h-4 text-brand-500 rounded bg-slate-800 border-slate-700 focus:ring-brand-500">
+        </div>
+      </div>
+
+      <!-- Macro & Inflation Assumptions -->
+      <div class="space-y-3 pt-2 border-t border-slate-800/80">
+        <span class="text-xs font-semibold text-slate-300 uppercase tracking-wider block">Macro Assumptions (Y2+)</span>
+        
+        <div class="space-y-1">
+          <div class="flex justify-between text-xs">
+            <span class="text-slate-200">Cost Inflation Rate</span>
+            <span id="lbl-inflation" class="font-mono text-amber-400 font-medium">15.0%</span>
+          </div>
+          <input type="range" id="inp-inflation" min="0" max="35" step="1" value="15" class="w-full h-1.5 bg-slate-700 rounded-lg cursor-pointer">
+        </div>
+
+        <div class="space-y-1">
+          <div class="flex justify-between text-xs">
+            <span class="text-slate-200">Contract Escalation Rate</span>
+            <span id="lbl-escalation" class="font-mono text-emerald-400 font-medium">10.0%</span>
+          </div>
+          <input type="range" id="inp-escalation" min="0" max="30" step="1" value="10" class="w-full h-1.5 bg-slate-700 rounded-lg cursor-pointer">
+        </div>
+
+        <div class="space-y-1">
+          <div class="flex justify-between text-xs">
+            <span class="text-slate-200">Discount Rate (WACC)</span>
+            <span id="lbl-wacc" class="font-mono text-purple-400 font-medium">45.75%</span>
+          </div>
+          <input type="range" id="inp-wacc" min="15" max="60" step="0.25" value="45.75" class="w-full h-1.5 bg-slate-700 rounded-lg cursor-pointer">
+        </div>
+      </div>
+    </aside>
+
+    <!-- Right Presentation Panels (9 cols) -->
+    <main class="lg:col-span-9 space-y-6">
+
+      <!-- Real-Time Top KPI Metric Cards -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 print-kpi-grid">
+        <div class="bg-dark-900 border border-slate-800 rounded-2xl p-4 shadow-lg flex flex-col justify-between relative overflow-hidden group print-kpi-card">
+          <span class="text-xs font-semibold text-slate-300 uppercase tracking-wider">Monthly Revenue</span>
+          <div class="mt-2">
+            <span id="kpi-revenue" class="text-2xl font-bold font-mono text-white val">930,000</span>
+            <span class="text-xs text-slate-300 block font-mono mt-0.5">EGP / Month</span>
+          </div>
+          <div class="mt-3 flex items-center justify-between text-[11px] border-t border-slate-800/80 pt-2 text-slate-300">
+            <span>Per Base Worker</span>
+            <span id="kpi-unit-rev" class="font-mono text-white font-semibold">22,143 EGP</span>
+          </div>
+        </div>
+
+        <div class="bg-dark-900 border border-slate-800 rounded-2xl p-4 shadow-lg flex flex-col justify-between relative overflow-hidden group print-kpi-card">
+          <span class="text-xs font-semibold text-slate-300 uppercase tracking-wider">Monthly EBITDA</span>
+          <div class="mt-2">
+            <span id="kpi-ebitda" class="text-2xl font-bold font-mono text-emerald-400 val">208,043</span>
+            <span id="kpi-ebitda-sub" class="text-xs text-slate-300 block font-mono mt-0.5">EGP (22.4% Margin)</span>
+          </div>
+          <div class="mt-3 flex items-center justify-between text-[11px] border-t border-slate-800/80 pt-2 text-slate-300">
+            <span>Annual Run-rate</span>
+            <span id="kpi-annual-ebitda" class="font-mono text-white font-semibold">2.50M EGP</span>
+          </div>
+        </div>
+
+        <div class="bg-dark-900 border border-slate-800 rounded-2xl p-4 shadow-lg flex flex-col justify-between relative overflow-hidden group print-kpi-card">
+          <span class="text-xs font-semibold text-slate-300 uppercase tracking-wider">Net Monthly Profit</span>
+          <div class="mt-2">
+            <span id="kpi-net-profit" class="text-2xl font-bold font-mono text-brand-400 val">105,909</span>
+            <span id="kpi-net-profit-sub" class="text-xs text-slate-300 block font-mono mt-0.5">After Tax (11.4% Net)</span>
+          </div>
+          <div class="mt-3 flex items-center justify-between text-[11px] border-t border-slate-800/80 pt-2 text-slate-300">
+            <span>Commercial Markup</span>
+            <span id="kpi-markup" class="font-mono text-white font-semibold">18.9%</span>
+          </div>
+        </div>
+
+        <div class="bg-dark-900 border border-slate-800 rounded-2xl p-4 shadow-lg flex flex-col justify-between relative overflow-hidden group print-kpi-card">
+          <span class="text-xs font-semibold text-slate-300 uppercase tracking-wider">3-Year Project NPV</span>
+          <div class="mt-2">
+            <span id="kpi-npv" class="text-2xl font-bold font-mono text-purple-400 val">539,922</span>
+            <span class="text-xs text-slate-300 block font-mono mt-0.5">EGP (IRR: <span id="kpi-irr" class="text-purple-300 font-bold">65.3%</span>)</span>
+          </div>
+          <div class="mt-3 flex items-center justify-between text-[11px] border-t border-slate-800/80 pt-2 text-slate-300">
+            <span>Payback Period</span>
+            <span id="kpi-payback" class="font-mono text-white font-semibold">26.5 Months</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 1: EXECUTIVE DASHBOARD -->
+      <section id="pane-dashboard" class="space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 no-print">
+          <div class="bg-dark-900 border border-slate-800 rounded-2xl p-5 shadow-lg">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+              <h3 class="text-sm font-semibold text-white flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-brand-500"></span>
+                Cost Breakdown Structure (Monthly)
+              </h3>
+              <span id="lbl-total-cost" class="text-xs font-mono text-slate-300 font-semibold">Total: 782,241 EGP</span>
+            </div>
+            <div class="h-64 relative flex items-center justify-center">
+              <canvas id="chartCostStructure"></canvas>
+            </div>
+          </div>
+
+          <div class="bg-dark-900 border border-slate-800 rounded-2xl p-5 shadow-lg">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+              <h3 class="text-sm font-semibold text-white flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                Break-Even Volume & Margin Curve
+              </h3>
+              <span id="lbl-bep-workers" class="text-xs font-mono text-emerald-400 font-bold">BEP: 27.0 Workers</span>
+            </div>
+            <div class="h-64 relative">
+              <canvas id="chartBreakEven"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Operational Cost Pool Analysis Table -->
+        <div id="table-cost-container" class="bg-dark-900 border border-slate-800 rounded-2xl p-5 shadow-lg overflow-hidden">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+              <svg class="w-4 h-4 text-brand-400 no-print" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+              Operational Cost Pool Analysis
+            </h3>
+            <span class="text-[11px] font-mono text-slate-300 no-print font-medium">Direct & Indirect Burdens</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-xs text-left border-collapse">
+              <thead>
+                <tr class="border-b border-slate-700 bg-dark-850/80 text-brand-400">
+                  <th class="py-3 px-4 font-bold">Expense Category</th>
+                  <th class="py-3 px-4 text-right font-bold">Monthly Amount (EGP)</th>
+                  <th class="py-3 px-4 text-right font-bold">% of Total Cost</th>
+                  <th class="py-3 px-4 text-right font-bold">Unit / Headcount Rate</th>
+                  <th class="py-3 px-4 font-bold">Financial Classification</th>
+                </tr>
+              </thead>
+              <tbody id="tbl-cost-breakdown" class="divide-y divide-slate-800 font-mono">
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Dynamic Overhead Allocation Model Section (Matching Excel Sheet) -->
+        <div id="section-overhead-model" class="bg-dark-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-4 no-print">
+          <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-3">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-brand-400"></span>
+                <h3 class="text-sm font-bold text-white tracking-tight">Overhead Allocation Model & Absorption Analysis</h3>
+                <span class="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-brand-500/10 text-brand-400 border border-brand-500/20">Excel v1.3 Dynamic</span>
+              </div>
+              <p class="text-xs text-slate-300 mt-0.5">Dual-method corporate SG&A absorption engine aligned with contract revenue and direct labor drivers.</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-slate-400">Active Method:</span>
+              <span id="lbl-ovh-active-badge" class="px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-brand-600 text-white border border-brand-500/50">Method 1 (Revenue Weighted)</span>
+            </div>
+          </div>
+
+          <!-- Dual Method Comparison Cards -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Method 1 Card -->
+            <div id="ovh-card-m1" class="p-4 rounded-xl border border-slate-800 bg-dark-850/80 transition-all flex flex-col justify-between">
+              <div>
+                <div class="flex justify-between items-start mb-2">
+                  <div>
+                    <span class="text-[11px] font-semibold text-brand-400 uppercase tracking-wider block">Method 1</span>
+                    <h4 class="text-sm font-bold text-white">Revenue Weighted Allocation</h4>
+                  </div>
+                  <span id="ovh-badge-m1" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-brand-500 text-white">ACTIVE</span>
+                </div>
+                <p class="text-[11px] text-slate-300 mb-3">Allocates corporate overhead based on project billed volume (3.7826% of Gross Contract Value)[cite: 1].</p>
+                
+                <div class="space-y-2 border-t border-slate-800/80 pt-3 text-xs font-mono">
+                  <div class="flex justify-between">
+                    <span class="text-slate-400 font-sans">Monthly Allocated SG&A:</span>
+                    <span id="ovh-card-m1-val" class="font-bold text-white text-sm">35,178 EGP</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-slate-400 font-sans">Annualized Corporate Pool:</span>
+                    <span id="ovh-card-m1-annual" class="text-slate-200">422.1k EGP</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-slate-400 font-sans">Burden per Operational Cleaner:</span>
+                    <span id="ovh-card-m1-perhead" class="text-brand-400 font-semibold">838 EGP / cleaner</span>
+                  </div>
+                  <div class="flex justify-between text-[11px] text-slate-400">
+                    <span class="font-sans">Formula Basis:</span>
+                    <span>Price × 3.7826%</span>
+                  </div>
+                </div>
+              </div>
+              <div class="mt-4 pt-3 border-t border-slate-800/80">
+                <button onclick="setOverheadMode('revenue')" id="btn-ovh-apply-m1" class="w-full py-1.5 px-3 rounded-lg text-xs font-semibold bg-brand-600 hover:bg-brand-500 text-white transition">
+                  Apply Revenue Weighted Method
+                </button>
+              </div>
+            </div>
+
+            <!-- Method 2 Card -->
+            <div id="ovh-card-m2" class="p-4 rounded-xl border border-slate-800 bg-dark-850/80 transition-all flex flex-col justify-between">
+              <div>
+                <div class="flex justify-between items-start mb-2">
+                  <div>
+                    <span class="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider block">Method 2</span>
+                    <h4 class="text-sm font-bold text-white">Direct Labor Hours (DLH) Allocation</h4>
+                  </div>
+                  <span id="ovh-badge-m2" class="text-[10px] font-mono font-medium px-2 py-0.5 rounded bg-slate-800 text-slate-400">STANDBY</span>
+                </div>
+                <p class="text-[11px] text-slate-300 mb-3">Activity-Based Costing driver: Direct labor hours (DLH) scaled dynamically with total cleaners & relief[cite: 1].</p>
+                
+                <div class="space-y-2 border-t border-slate-800/80 pt-3 text-xs font-mono">
+                  <div class="flex justify-between">
+                    <span class="text-slate-400 font-sans">Monthly Allocated SG&A:</span>
+                    <span id="ovh-card-m2-val" class="font-bold text-white text-sm">19,977 EGP</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-slate-400 font-sans">Annualized Corporate Pool:</span>
+                    <span id="ovh-card-m2-annual" class="text-slate-200">239.7k EGP</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-slate-400 font-sans">Burden per Operational Cleaner:</span>
+                    <span id="ovh-card-m2-perhead" class="text-emerald-400 font-semibold">476 EGP / cleaner</span>
+                  </div>
+                  <div class="flex justify-between text-[11px] text-slate-400">
+                    <span class="font-sans">Formula Basis:</span>
+                    <span id="ovh-card-m2-formula">42 Cleaners @ 475.64 EGP/mo</span>
+                  </div>
+                </div>
+              </div>
+              <div class="mt-4 pt-3 border-t border-slate-800/80">
+                <button onclick="setOverheadMode('hours')" id="btn-ovh-apply-m2" class="w-full py-1.5 px-3 rounded-lg text-xs font-semibold bg-dark-800 hover:bg-emerald-600 text-white transition">
+                  Apply Labor Hours Method
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Variance & Tender Strategy Insight -->
+          <div class="bg-dark-850 p-4 rounded-xl border border-slate-800 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex flex-wrap items-center gap-6">
+              <div>
+                <span class="text-[10px] text-slate-400 uppercase tracking-wider block">Monthly Overhead Spread</span>
+                <span id="ovh-diff-monthly" class="font-mono text-base font-bold text-emerald-400">+15,201 EGP</span>
+              </div>
+              <div>
+                <span class="text-[10px] text-slate-400 uppercase tracking-wider block">Annual Contract Spread</span>
+                <span id="ovh-diff-annual" class="font-mono text-base font-bold text-white">+182,415 EGP</span>
+              </div>
+              <div>
+                <span class="text-[10px] text-slate-400 uppercase tracking-wider block">EBITDA Margin Impact</span>
+                <span id="ovh-diff-margin" class="font-mono text-base font-bold text-emerald-400">+1.63% Margin Relief</span>
+              </div>
+            </div>
+            <div class="max-w-md text-xs text-slate-300">
+              <p id="ovh-diff-narrative" class="leading-relaxed">
+                Method 2 reduces allocated overhead burden, raising contract EBITDA by <b class="text-emerald-400 font-mono">+1.63%</b> and lowering break-even volume for price-sensitive tenders[cite: 1].
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Printable-Only Commercial Rate Card Schedule -->
+        <div id="print-commercial-options" class="hidden">
+          <div class="print-rate-box">
+            <b class="text-[11px] block uppercase text-white tracking-wider border-b border-slate-700 pb-1 mb-2">Option A: Unitemized Headcount</b>
+            <div class="text-[10px] font-mono space-y-1">
+              <div class="flex justify-between"><span>Cleaner / Month:</span> <b id="prt-cleaner-unitem" class="text-white"></b></div>
+              <div class="flex justify-between"><span>Supervisor / Month:</span> <b id="prt-sup-unitem" class="text-white"></b></div>
+              <div class="flex justify-between"><span>Manager / Month:</span> <b id="prt-mgr-unitem" class="text-white"></b></div>
+              <div class="pt-1.5 border-t border-slate-700 font-bold flex justify-between text-brand-400"><span>Contract Billed:</span> <span id="prt-tot-unitem"></span></div>
+            </div>
+          </div>
+          <div class="print-rate-box">
+            <b class="text-[11px] block uppercase text-white tracking-wider border-b border-slate-700 pb-1 mb-2">Option B: Labor-Only Markup</b>
+            <div class="text-[10px] font-mono space-y-1">
+              <div class="flex justify-between"><span>Cleaner Labor:</span> <b id="prt-cleaner-labor" class="text-white"></b></div>
+              <div class="flex justify-between"><span>Supervisor Labor:</span> <b id="prt-sup-labor" class="text-white"></b></div>
+              <div class="flex justify-between"><span>Manager Labor:</span> <b id="prt-mgr-labor" class="text-white"></b></div>
+              <div class="pt-1.5 border-t border-slate-700 font-bold flex justify-between text-emerald-400"><span>Labor Subtotal:</span> <span id="prt-tot-labor"></span></div>
+            </div>
+          </div>
+          <div class="print-rate-box">
+            <b class="text-[11px] block uppercase text-white tracking-wider border-b border-slate-700 pb-1 mb-2">Option C: Cost-Plus Itemized</b>
+            <div class="text-[10px] font-mono space-y-1">
+              <div class="flex justify-between"><span>Labor:</span> <span id="prt-item-labor" class="text-white font-semibold"></span></div>
+              <div class="flex justify-between"><span>Transport:</span> <span id="prt-item-trans" class="text-white font-semibold"></span></div>
+              <div class="flex justify-between"><span>Machinery:</span> <span id="prt-item-mach" class="text-white font-semibold"></span></div>
+              <div class="pt-1.5 border-t border-slate-700 font-bold flex justify-between text-purple-400"><span>Total Billed:</span> <span id="prt-tot-itemized"></span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Printable-Only Sign-off Block -->
+        <div id="print-signoff-block" class="hidden text-xs">
+          <div>
+            <span class="block text-slate-400 font-medium text-[9px] uppercase tracking-wider">Prepared By (Commercial Lead):</span>
+            <div class="mt-4 border-t border-slate-600 w-44 text-center pt-1 font-bold text-white">Commercial Finance Dept.</div>
+          </div>
+          <div>
+            <span class="block text-slate-400 font-medium text-[9px] uppercase tracking-wider">Approved By (Client / CFO):</span>
+            <div class="mt-4 border-t border-slate-600 w-44 text-center pt-1 font-bold text-white">Authorized Signature</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: 3-YEAR FINANCIAL MODEL & DCF -->
+      <section id="pane-pnl" class="space-y-6 hidden">
+        <div class="bg-dark-900 border border-slate-800 rounded-2xl p-5 shadow-lg">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+            <div>
+              <h3 class="text-sm font-semibold text-white">3-Year Dynamic Multi-Period Valuation</h3>
+              <p class="text-xs text-slate-300">Integrated Income Statement, Free Cash Flow & Discounted Terminal Salvage</p>
+            </div>
+            <div class="flex gap-4 text-xs font-mono">
+              <span class="text-emerald-400">Escalation: <b id="val-esc-badge">10%</b></span>
+              <span class="text-amber-400">Inflation: <b id="val-inf-badge">15%</b></span>
+            </div>
+          </div>
+          <div class="h-72 relative mb-6">
+            <canvas id="chartMultiYear"></canvas>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-xs text-left border-collapse">
+              <thead>
+                <tr class="border-b border-slate-700 bg-dark-850/80 text-brand-400">
+                  <th class="py-3 px-4 font-sans font-bold">Statement Line Item (in EGP)</th>
+                  <th class="py-3 px-4 text-right font-bold">Year 0 (Mobilization)</th>
+                  <th class="py-3 px-4 text-right font-bold text-white">Year 1</th>
+                  <th class="py-3 px-4 text-right font-bold text-white">Year 2</th>
+                  <th class="py-3 px-4 text-right font-bold text-white">Year 3</th>
+                  <th class="py-3 px-4 text-right font-bold text-emerald-400">3-Year Cumulative</th>
+                </tr>
+              </thead>
+              <tbody id="tbl-multiyear-pnl" class="divide-y divide-slate-800 font-mono">
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: COMMERCIAL RATE CARD -->
+      <section id="pane-ratecard" class="space-y-6 hidden">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="bg-dark-900 border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col justify-between">
+            <div>
+              <span class="text-xs font-semibold text-brand-400 uppercase tracking-wider block mb-1">Option A</span>
+              <h3 class="text-base font-bold text-white mb-2">Unitemized Headcount Rate</h3>
+              <p class="text-xs text-slate-300 mb-4">Blends direct labor, supervisory burden, equipment, and fixed overhead absorption into a single billing rate.</p>
+              
+              <div class="space-y-3 font-mono text-xs pt-2 border-t border-slate-800">
+                <div class="flex justify-between py-1.5 border-b border-slate-800/80">
+                  <span class="text-slate-300 font-sans">Cleaner Rate / Month:</span>
+                  <span id="card-cleaner-unitem" class="font-bold text-white">21,114 EGP</span>
+                </div>
+                <div class="flex justify-between py-1.5 border-b border-slate-800/80">
+                  <span class="text-slate-300 font-sans">Supervisor Rate / Month:</span>
+                  <span id="card-sup-unitem" class="font-bold text-white">25,881 EGP</span>
+                </div>
+                <div class="flex justify-between py-1.5">
+                  <span class="text-slate-300 font-sans">Manager Rate / Month:</span>
+                  <span id="card-mgr-unitem" class="font-bold text-white">28,431 EGP</span>
+                </div>
+              </div>
+            </div>
+            <div class="mt-6 pt-4 border-t border-slate-800 flex justify-between items-center">
+              <span class="text-xs text-slate-300">Total Contract Billed:</span>
+              <span id="card-total-unitem" class="text-sm font-bold font-mono text-brand-400">930,000 EGP</span>
+            </div>
+          </div>
+
+          <div class="bg-dark-900 border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col justify-between">
+            <div>
+              <span class="text-xs font-semibold text-emerald-400 uppercase tracking-wider block mb-1">Option B</span>
+              <h3 class="text-base font-bold text-white mb-2">Labor Only Rate Card</h3>
+              <p class="text-xs text-slate-300 mb-4">Direct variable labor cost with commercial markup applied. Machinery and logistics billed under a separate schedule.</p>
+              
+              <div class="space-y-3 font-mono text-xs pt-2 border-t border-slate-800">
+                <div class="flex justify-between py-1.5 border-b border-slate-800/80">
+                  <span class="text-slate-300 font-sans">Cleaner Billed Rate:</span>
+                  <span id="card-cleaner-labor" class="font-bold text-white">13,800 EGP</span>
+                </div>
+                <div class="flex justify-between py-1.5 border-b border-slate-800/80">
+                  <span class="text-slate-300 font-sans">Supervisor Billed Rate:</span>
+                  <span id="card-sup-labor" class="font-bold text-white">18,888 EGP</span>
+                </div>
+                <div class="flex justify-between py-1.5">
+                  <span class="text-slate-300 font-sans">Manager Billed Rate:</span>
+                  <span id="card-mgr-labor" class="font-bold text-white">21,609 EGP</span>
+                </div>
+              </div>
+            </div>
+            <div class="mt-6 pt-4 border-t border-slate-800 flex justify-between items-center">
+              <span class="text-xs text-slate-300">Labor Subtotal:</span>
+              <span id="card-total-labor" class="text-sm font-bold font-mono text-emerald-400">612,843 EGP</span>
+            </div>
+          </div>
+
+          <div class="bg-dark-900 border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col justify-between">
+            <div>
+              <span class="text-xs font-semibold text-purple-400 uppercase tracking-wider block mb-1">Option C</span>
+              <h3 class="text-base font-bold text-white mb-2">Itemized Commercial Proposal</h3>
+              <p class="text-xs text-slate-300 mb-4">Complete commercial cost transparency across direct labor, logistics supplier, equipment lease, and materials.</p>
+              
+              <div class="space-y-2 font-mono text-xs pt-2 border-t border-slate-800">
+                <div class="flex justify-between py-1 border-b border-slate-800/80">
+                  <span class="text-slate-300 font-sans">Labor Billing:</span>
+                  <span id="card-item-labor" class="text-white font-semibold">612,843 EGP</span>
+                </div>
+                <div class="flex justify-between py-1 border-b border-slate-800/80">
+                  <span class="text-slate-300 font-sans">Transportation:</span>
+                  <span id="card-item-trans" class="text-white font-semibold">176,907 EGP</span>
+                </div>
+                <div class="flex justify-between py-1 border-b border-slate-800/80">
+                  <span class="text-slate-300 font-sans">Machinery Amortization:</span>
+                  <span id="card-item-mach" class="text-white font-semibold">78,837 EGP</span>
+                </div>
+                <div class="flex justify-between py-1 border-b border-slate-800/80">
+                  <span class="text-slate-300 font-sans">Chemicals & Consumables:</span>
+                  <span id="card-item-mat" class="text-white font-semibold">19,590 EGP</span>
+                </div>
+                <div class="flex justify-between py-1">
+                  <span class="text-slate-300 font-sans">Overhead & Admin:</span>
+                  <span id="card-item-oh" class="text-white font-semibold">41,823 EGP</span>
+                </div>
+              </div>
+            </div>
+            <div class="mt-6 pt-4 border-t border-slate-800 flex justify-between items-center">
+              <span class="text-xs text-slate-300">Total Contract Value:</span>
+              <span id="card-total-itemized" class="text-sm font-bold font-mono text-purple-400">930,000 EGP</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: MONTE CARLO SIMULATION -->
+      <section id="pane-montecarlo" class="space-y-6 hidden">
+        <div class="bg-dark-900 border border-slate-800 rounded-2xl p-5 shadow-lg">
+          <div class="flex flex-wrap items-center justify-between border-b border-slate-800 pb-3 mb-4 gap-4">
+            <div>
+              <h3 class="text-sm font-semibold text-white">1,000-Iteration Monte Carlo Risk Engine</h3>
+              <p class="text-xs text-slate-300">Simulates Gaussian cash-flow volatility (&sigma; = 18%) across dynamic inflation and discount thresholds</p>
+            </div>
+            <button onclick="runMonteCarlo()" class="text-xs font-semibold bg-brand-600 hover:bg-brand-500 text-white px-4 py-2 rounded-xl transition shadow-lg shadow-brand-500/20 flex items-center gap-2">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+              Re-Run 1,000 Iterations
+            </button>
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+            <div class="bg-dark-850 p-3 rounded-xl border border-slate-800">
+              <span class="text-[11px] text-slate-300 block">Mean Simulated NPV</span>
+              <span id="mc-mean-npv" class="text-base font-bold font-mono text-white">0.60M EGP</span>
+            </div>
+            <div class="bg-dark-850 p-3 rounded-xl border border-slate-800">
+              <span class="text-[11px] text-slate-300 block">Median NPV (P50)</span>
+              <span id="mc-p50-npv" class="text-base font-bold font-mono text-emerald-400">0.60M EGP</span>
+            </div>
+            <div class="bg-dark-850 p-3 rounded-xl border border-slate-800">
+              <span class="text-[11px] text-slate-300 block">Value-at-Risk (95% Confidence)</span>
+              <span id="mc-var-npv" class="text-base font-bold font-mono text-amber-400">0.14M EGP</span>
+            </div>
+            <div class="bg-dark-850 p-3 rounded-xl border border-slate-800">
+              <span class="text-[11px] text-slate-300 block">Downside Risk (NPV &lt; 0)</span>
+              <span id="mc-loss-prob" class="text-base font-bold font-mono text-emerald-400">2.10%</span>
+            </div>
+          </div>
+
+          <div class="h-72 relative">
+            <canvas id="chartMonteCarlo"></canvas>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Footnote / Status Bar -->
+  <footer class="bg-dark-900 border-t border-slate-800 py-3 px-6 text-center text-xs text-slate-400 flex flex-wrap justify-between items-center no-print">
+    <span>Commercial Pricing Model v1.3 • Institutional Feasibility Framework</span>
+    <span class="font-mono">Engine: Client-Side Reactive Vector Calculation Engine</span>
+  </footer>
+
+  <!-- CORE REACTIVE CALCULATION LOGIC -->
+  <script>
+    const BASELINE = {
+      workerGrossMin: 7580.8711,
+      workerGrossFull: 8184.5238,
+      workerNet: 7000.00,
+      workerInsCompanyMin: 506.25,
+      workerInsCompanyFull: 1534.5982,
+      workerHealth: 130.00,
+      workerUniform: 100.00,
+      workerTaxMin: 280.08,
+      workerTaxFull: 280.13,
+      workerMartyrMin: 3.79,
+      workerMartyrFull: 4.09,
+
+      supGrossMin: 10068.9181,
+      supGrossFull: 10980.3233,
+      supNet: 9000.00,
+      supInsCompanyMin: 506.25,
+      supInsCompanyFull: 2058.8106,
+      supHealth: 130.00,
+      supUniform: 70.00,
+      supTaxMin: 766.88,
+      supTaxFull: 767.00,
+      supMartyrMin: 5.03,
+      supMartyrFull: 5.49,
+
+      mgrGrossMin: 13821.2633,
+      mgrGrossFull: 15196.7674,
+      mgrNet: 12000.00,
+      mgrInsCompanyMin: 506.25,
+      mgrInsCompanyFull: 2849.3939,
+      mgrHealth: 130.00,
+      mgrUniform: 0.00,
+      mgrTaxMin: 1517.35,
+      mgrTaxFull: 1517.52,
+      mgrMartyrMin: 6.91,
+      mgrMartyrFull: 7.60,
+
+      transportationSupplier: 148800.00,
+      machineryCapex: 2170200.00,
+      machineryDeprecMonthly: 60283.3333,
+      machineryMaintMonthly: 6028.3333,
+      consumablesMonthly: 16477.15625,
+      ohHoursMonthly: 19976.6827,
+      ohRevMonthly: 35215.7202,
+      corporateTaxRate: 0.225,
+      taxableProfitFactor: 0.20,
+      salvageRate: 0.30
+    };
+
+    let currentModelState = {
+      cf1: 1745061.57,
+      cf2: 1769679.56,
+      cf3: 2104662.50,
+      capex: 2170200.0,
+      wacc: 0.4575
+    };
+
+    let chartCost, chartBEP, chartMY, chartMC;
+
+    const fmt = (n) => Math.round(n).toLocaleString('en-US');
+    const fmtDec = (n, d=1) => Number(n).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
+    const fmtM = (n) => (n / 1000000).toFixed(2) + 'M';
+
+    function setOverheadMode(mode) {
+      document.getElementById('sel-overhead').value = mode;
+      calculateModel();
+    }
+
+    function applyPreset(presetType) {
+      ['aggressive', 'conservative', 'defense'].forEach(p => {
+        const btn = document.getElementById(`btn-pre-${p}`);
+        btn.className = "px-2 py-1.5 rounded-lg bg-dark-850 hover:bg-slate-800 text-[11px] font-medium text-slate-200 border border-slate-700/80 hover:text-white transition text-center leading-tight";
+      });
+
+      const activeBtn = document.getElementById(`btn-pre-${presetType}`);
+
+      if (presetType === 'aggressive') {
+        activeBtn.className = "px-2 py-1.5 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/50 text-[11px] font-semibold text-center leading-tight shadow";
+        document.getElementById('inp-price').value = 860000;
+        document.getElementById('inp-cleaners').value = 36;
+        document.getElementById('inp-supervisors').value = 4;
+        document.getElementById('inp-managers').value = 1;
+        document.getElementById('chk-relief').checked = true;
+        document.getElementById('sel-insurance').value = 'min';
+        document.getElementById('sel-overhead').value = 'hours';
+        document.getElementById('inp-inflation').value = 12;
+        document.getElementById('inp-escalation').value = 8;
+        document.getElementById('inp-wacc').value = 38.00;
+      } else if (presetType === 'conservative') {
+        activeBtn.className = "px-2 py-1.5 rounded-lg bg-brand-500/20 text-brand-300 border border-brand-500/50 text-[11px] font-semibold text-center leading-tight shadow";
+        document.getElementById('inp-price').value = 980000;
+        document.getElementById('inp-cleaners').value = 36;
+        document.getElementById('inp-supervisors').value = 5;
+        document.getElementById('inp-managers').value = 1;
+        document.getElementById('chk-relief').checked = true;
+        document.getElementById('sel-insurance').value = 'full';
+        document.getElementById('sel-overhead').value = 'revenue';
+        document.getElementById('inp-inflation').value = 15;
+        document.getElementById('inp-escalation').value = 10;
+        document.getElementById('inp-wacc').value = 45.75;
+      } else if (presetType === 'defense') {
+        activeBtn.className = "px-2 py-1.5 rounded-lg bg-purple-500/20 text-purple-300 border border-purple-500/50 text-[11px] font-semibold text-center leading-tight shadow";
+        document.getElementById('inp-price').value = 1150000;
+        document.getElementById('inp-cleaners').value = 36;
+        document.getElementById('inp-supervisors').value = 5;
+        document.getElementById('inp-managers').value = 1;
+        document.getElementById('chk-relief').checked = true;
+        document.getElementById('sel-insurance').value = 'full';
+        document.getElementById('sel-overhead').value = 'revenue';
+        document.getElementById('inp-inflation').value = 25;
+        document.getElementById('inp-escalation').value = 18;
+        document.getElementById('inp-wacc').value = 52.00;
+      }
+
+      calculateModel();
+    }
+
+    function triggerPrintProposal() {
+      switchTab('dashboard');
+      document.getElementById('print-date').innerText = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+      window.print();
+    }
+
+    // MAIN CALCULATION ENGINE
+    function calculateModel() {
+      const price = parseFloat(document.getElementById('inp-price').value);
+      const reqCleaners = parseInt(document.getElementById('inp-cleaners').value);
+      const reqSupervisors = parseInt(document.getElementById('inp-supervisors').value);
+      const reqManagers = parseInt(document.getElementById('inp-managers').value);
+      const isRelief = document.getElementById('chk-relief').checked;
+      const insMode = document.getElementById('sel-insurance').value;
+      const ohMode = document.getElementById('sel-overhead').value;
+      const costInflation = parseFloat(document.getElementById('inp-inflation').value) / 100;
+      const priceEscalation = parseFloat(document.getElementById('inp-escalation').value) / 100;
+      const wacc = parseFloat(document.getElementById('inp-wacc').value) / 100;
+
+      const reliefFactor = isRelief ? 0.166 : 0.0;
+      const totCleaners = reqCleaners + (isRelief ? Math.ceil(reqCleaners * reliefFactor) : 0);
+      const totSupervisors = reqSupervisors + (isRelief ? Math.ceil(reqSupervisors * reliefFactor) : 0);
+      const totManagers = reqManagers;
+      const totalHeadcount = totCleaners + totSupervisors + totManagers;
+      const baseHeadcount = reqCleaners + reqSupervisors + reqManagers;
+
+      document.getElementById('lbl-price').innerText = fmt(price);
+      document.getElementById('lbl-cleaners').innerText = `${reqCleaners} (+${totCleaners - reqCleaners} Relief = ${totCleaners})`;
+      document.getElementById('lbl-supervisors').innerText = `${reqSupervisors} (+${totSupervisors - reqSupervisors} Relief = ${totSupervisors})`;
+      document.getElementById('lbl-managers').innerText = `${reqManagers}`;
+      document.getElementById('lbl-inflation').innerText = (costInflation * 100).toFixed(1) + '%';
+      document.getElementById('lbl-escalation').innerText = (priceEscalation * 100).toFixed(1) + '%';
+      document.getElementById('lbl-wacc').innerText = (wacc * 100).toFixed(2) + '%';
+      document.getElementById('val-esc-badge').innerText = (priceEscalation * 100).toFixed(0) + '%';
+      document.getElementById('val-inf-badge').innerText = (costInflation * 100).toFixed(0) + '%';
+
+      const isFull = (insMode === 'full');
+      
+      const wGross = isFull ? BASELINE.workerGrossFull : BASELINE.workerGrossMin;
+      const wInsCo = isFull ? BASELINE.workerInsCompanyFull : BASELINE.workerInsCompanyMin;
+      const workerUnitCost = wGross + wInsCo + BASELINE.workerHealth + BASELINE.workerUniform;
+      const totalWorkerCost = totCleaners * workerUnitCost;
+
+      const sGross = isFull ? BASELINE.supGrossFull : BASELINE.supGrossMin;
+      const sInsCo = isFull ? BASELINE.supInsCompanyFull : BASELINE.supInsCompanyMin;
+      const supUnitCost = sGross + sInsCo + BASELINE.supHealth + BASELINE.supUniform;
+      const totalSupCost = totSupervisors * supUnitCost;
+
+      const mGross = isFull ? BASELINE.mgrGrossFull : BASELINE.mgrGrossMin;
+      const mInsCo = isFull ? BASELINE.mgrInsCompanyFull : BASELINE.mgrInsCompanyMin;
+      const mgrUnitCost = mGross + mInsCo + BASELINE.mgrHealth + BASELINE.mgrUniform;
+      const totalMgrCost = totManagers * mgrUnitCost;
+
+      const totalLaborCost = totalWorkerCost + totalSupCost + totalMgrCost;
+
+      const scaleRatio = totCleaners / 42.0;
+      const transCost = BASELINE.transportationSupplier * scaleRatio;
+      const machDeprec = BASELINE.machineryDeprecMonthly;
+      const machMaint = BASELINE.machineryMaintMonthly;
+      const consumables = BASELINE.consumablesMonthly * scaleRatio;
+      const directCosts = totalLaborCost + transCost + machDeprec + machMaint + consumables;
+
+      // Dynamic Overhead Allocation (Dual-Method Reactive Calculation)
+      const ohRevenue = BASELINE.ohRevMonthly * (price / 931000.0);
+      const ohHours = BASELINE.ohHoursMonthly * scaleRatio;
+      const overheadCost = (ohMode === 'revenue') ? ohRevenue : ohHours;
+
+      // Update sidebar dropdown text dynamically with live EGP values
+      const optRev = document.getElementById('opt-overhead-rev');
+      const optHours = document.getElementById('opt-overhead-hours');
+      if (optRev) optRev.text = `Method 1: Revenue Weighted % (EGP ${fmt(ohRevenue)})`;
+      if (optHours) optHours.text = `Method 2: Operational Labor Hours (EGP ${fmt(ohHours)})`;
+
+      const totalCostMonthly = directCosts + overheadCost;
+
+      const cashExpensesMonthly = totalLaborCost + transCost + consumables + machMaint + overheadCost;
+      const ebitdaMonthly = price - cashExpensesMonthly;
+      const ebtMonthly = price - totalCostMonthly;
+      const taxMonthly = (price * BASELINE.taxableProfitFactor) * BASELINE.corporateTaxRate;
+      const netProfitMonthly = ebtMonthly - taxMonthly;
+
+      const markupPct = ((price - totalCostMonthly) / totalCostMonthly) * 100;
+      const netMarginPct = (netProfitMonthly / price) * 100;
+      const ebitdaMarginPct = (ebitdaMonthly / price) * 100;
+
+      const fixedCostsMonthly = machDeprec + machMaint + transCost + consumables + overheadCost;
+      const varCostPerWorker = totalLaborCost / baseHeadcount;
+      const revPerWorker = price / baseHeadcount;
+      const contribMarginPerWorker = revPerWorker - varCostPerWorker;
+      const bepWorkers = contribMarginPerWorker > 0 ? (fixedCostsMonthly / contribMarginPerWorker) : 0;
+
+      const yr1Rev = price * 12;
+      const yr2Rev = yr1Rev * (1 + priceEscalation);
+      const yr3Rev = yr2Rev * (1 + priceEscalation);
+
+      const yr1CashExpenses = cashExpensesMonthly * 12;
+      const yr2CashExpenses = yr1CashExpenses * (1 + costInflation);
+      const yr3CashExpenses = yr2CashExpenses * (1 + costInflation);
+
+      const yr1Deprec = machDeprec * 12;
+      const yr2Deprec = machDeprec * 12;
+      const yr3Deprec = machDeprec * 12;
+
+      const yr1Ebitda = yr1Rev - yr1CashExpenses;
+      const yr2Ebitda = yr2Rev - yr2CashExpenses;
+      const yr3Ebitda = yr3Rev - yr3CashExpenses;
+
+      const yr1Tax = (yr1Rev * BASELINE.taxableProfitFactor) * BASELINE.corporateTaxRate;
+      const yr2Tax = (yr2Rev * BASELINE.taxableProfitFactor) * BASELINE.corporateTaxRate;
+      const yr3Tax = (yr3Rev * BASELINE.taxableProfitFactor) * BASELINE.corporateTaxRate;
+
+      const wc1 = (price - totalLaborCost - transCost - consumables);
+      const wc2 = (price * (1 + priceEscalation) - (totalLaborCost + transCost + consumables) * (1 + costInflation));
+      const wc3 = (price * Math.pow(1 + priceEscalation, 2) - (totalLaborCost + transCost + consumables) * Math.pow(1 + costInflation, 2));
+
+      const dWC1 = wc1;
+      const dWC2 = wc2 - wc1;
+      const dWC3 = wc3 - wc2;
+
+      const cf0 = -BASELINE.machineryCapex;
+      const cf1 = yr1Ebitda - yr1Tax - dWC1;
+      const cf2 = yr2Ebitda - yr2Tax - dWC2;
+      const salvageVal = BASELINE.machineryCapex * BASELINE.salvageRate;
+      const cf3 = yr3Ebitda - yr3Tax - dWC3 + salvageVal;
+
+      currentModelState = { cf1, cf2, cf3, capex: BASELINE.machineryCapex, wacc };
+
+      const pv1 = cf1 / Math.pow(1 + wacc, 1);
+      const pv2 = cf2 / Math.pow(1 + wacc, 2);
+      const pv3 = cf3 / Math.pow(1 + wacc, 3);
+      const npv = cf0 + pv1 + pv2 + pv3;
+
+      let irr = 0.50;
+      for (let iter = 0; iter < 100; iter++) {
+        const npvVal = cf0 + cf1/(1+irr) + cf2/Math.pow(1+irr, 2) + cf3/Math.pow(1+irr, 3);
+        const dNpv = -cf1/Math.pow(1+irr, 2) - 2*cf2/Math.pow(1+irr, 3) - 3*cf3/Math.pow(1+irr, 4);
+        const nextIrr = irr - npvVal / dNpv;
+        if (Math.abs(nextIrr - irr) < 0.00001) { irr = nextIrr; break; }
+        irr = nextIrr;
+      }
+
+      let paybackMonths = 36;
+      if (cf0 + pv1 >= 0) {
+        paybackMonths = (Math.abs(cf0) / pv1) * 12;
+      } else if (cf0 + pv1 + pv2 >= 0) {
+        paybackMonths = 12 + ((Math.abs(cf0) - pv1) / pv2) * 12;
+      } else if (cf0 + pv1 + pv2 + pv3 >= 0) {
+        paybackMonths = 24 + ((Math.abs(cf0) - pv1 - pv2) / pv3) * 12;
+      }
+
+      document.getElementById('kpi-revenue').innerText = fmt(price);
+      document.getElementById('kpi-unit-rev').innerText = fmt(price / baseHeadcount) + ' EGP';
+      document.getElementById('kpi-ebitda').innerText = fmt(ebitdaMonthly);
+      document.getElementById('kpi-ebitda-sub').innerText = `EGP (${fmtDec(ebitdaMarginPct)}% Margin)`;
+      document.getElementById('kpi-annual-ebitda').innerText = fmtM(ebitdaMonthly * 12) + ' EGP';
+      document.getElementById('kpi-net-profit').innerText = fmt(netProfitMonthly);
+      document.getElementById('kpi-net-profit-sub').innerText = `After Tax (${fmtDec(netMarginPct)}% Net)`;
+      document.getElementById('kpi-markup').innerText = fmtDec(markupPct) + '%';
+      document.getElementById('kpi-npv').innerText = fmt(npv);
+      document.getElementById('kpi-irr').innerText = fmtDec(irr * 100) + '%';
+      document.getElementById('kpi-payback').innerText = fmtDec(paybackMonths, 1) + ' Months';
+      document.getElementById('lbl-total-cost').innerText = `Total: ${fmt(totalCostMonthly)} EGP`;
+      document.getElementById('lbl-bep-workers').innerText = `BEP: ${fmtDec(bepWorkers, 1)} Workers`;
+
+      renderCostTable({
+        totalLaborCost, transCost, machDeprec, machMaint, consumables, overheadCost, totalCostMonthly, totalHeadcount
+      });
+
+      renderOverheadSection({
+        ohMode, ohRevenue, ohHours, overheadCost, price, totCleaners, totalHeadcount, baseHeadcount
+      });
+
+      renderMultiYearTable({
+        yr1Rev, yr2Rev, yr3Rev,
+        yr1CashExpenses, yr2CashExpenses, yr3CashExpenses,
+        yr1Deprec, yr2Deprec, yr3Deprec,
+        yr1Ebitda, yr2Ebitda, yr3Ebitda,
+        yr1Tax, yr2Tax, yr3Tax,
+        cf0, cf1, cf2, cf3, salvageVal, npv
+      });
+
+      renderRateCards({
+        price, totalCostMonthly, markupPct, netMarginPct,
+        totalWorkerCost, totalSupCost, totalMgrCost,
+        reqCleaners, reqSupervisors, reqManagers, baseHeadcount,
+        totalLaborCost, transCost, machDeprec, machMaint, consumables, overheadCost, taxMonthly, fixedCostsMonthly
+      });
+
+      updateCharts({
+        totalLaborCost, transCost, machDeprec, machMaint, consumables, overheadCost,
+        price, bepWorkers, fixedCostsMonthly, varCostPerWorker, revPerWorker, baseHeadcount,
+        yr1Rev, yr2Rev, yr3Rev, yr1CashExpenses, yr2CashExpenses, yr3CashExpenses, yr1Ebitda, yr2Ebitda, yr3Ebitda
+      });
+
+      if (!document.getElementById('pane-montecarlo').classList.contains('hidden')) {
+        runMonteCarlo();
+      }
+    }
+
+    // DYNAMIC OVERHEAD ALLOCATION MODEL SECTION RENDERER
+    function renderOverheadSection(d) {
+      const isRev = (d.ohMode === 'revenue');
+      
+      document.getElementById('lbl-ovh-active-badge').innerText = isRev ? "Method 1 (Revenue Weighted %)" : "Method 2 (Labor Hours DLH)";
+      document.getElementById('lbl-ovh-active-badge').className = isRev 
+        ? "px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-brand-600 text-white border border-brand-500/50"
+        : "px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-emerald-600 text-white border border-emerald-500/50";
+
+      document.getElementById('ovh-card-m1-val').innerText = `${fmt(d.ohRevenue)} EGP`;
+      document.getElementById('ovh-card-m1-annual').innerText = `${fmtDec((d.ohRevenue * 12) / 1000, 1)}k EGP`;
+      document.getElementById('ovh-card-m1-perhead').innerText = `${fmt(d.ohRevenue / d.totCleaners)} EGP / cleaner`;
+
+      const totalDLH = d.totCleaners * 208;
+      const dlhRate = d.ohHours / totalDLH;
+      document.getElementById('ovh-card-m2-val').innerText = `${fmt(d.ohHours)} EGP`;
+      document.getElementById('ovh-card-m2-annual').innerText = `${fmtDec((d.ohHours * 12) / 1000, 1)}k EGP`;
+      document.getElementById('ovh-card-m2-perhead').innerText = `${fmt(d.ohHours / d.totCleaners)} EGP / cleaner`;
+      document.getElementById('ovh-card-m2-formula').innerText = `${d.totCleaners} Cleaners (${fmt(totalDLH)} DLH @ ${fmtDec(dlhRate, 2)} EGP/h)`;
+
+      const cardM1 = document.getElementById('ovh-card-m1');
+      const cardM2 = document.getElementById('ovh-card-m2');
+      const badgeM1 = document.getElementById('ovh-badge-m1');
+      const badgeM2 = document.getElementById('ovh-badge-m2');
+      const btnM1 = document.getElementById('btn-ovh-apply-m1');
+      const btnM2 = document.getElementById('btn-ovh-apply-m2');
+
+      if (isRev) {
+        cardM1.className = "p-4 rounded-xl border-2 border-brand-500 bg-brand-950/20 shadow-lg shadow-brand-500/10 transition-all flex flex-col justify-between";
+        cardM2.className = "p-4 rounded-xl border border-slate-800 bg-dark-850/80 transition-all opacity-85 hover:opacity-100 flex flex-col justify-between";
+        badgeM1.className = "text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-brand-500 text-white";
+        badgeM1.innerText = "ACTIVE IN MODEL";
+        badgeM2.className = "text-[10px] font-mono font-medium px-2 py-0.5 rounded bg-slate-800 text-slate-400";
+        badgeM2.innerText = "STANDBY";
+        btnM1.className = "w-full py-1.5 px-3 rounded-lg text-xs font-semibold bg-brand-600 text-white cursor-default";
+        btnM1.innerText = "Active Selection";
+        btnM2.className = "w-full py-1.5 px-3 rounded-lg text-xs font-semibold bg-dark-800 hover:bg-emerald-600 text-slate-200 hover:text-white transition";
+        btnM2.innerText = "Switch to Labor Hours Method";
+      } else {
+        cardM1.className = "p-4 rounded-xl border border-slate-800 bg-dark-850/80 transition-all opacity-85 hover:opacity-100 flex flex-col justify-between";
+        cardM2.className = "p-4 rounded-xl border-2 border-emerald-500 bg-emerald-950/20 shadow-lg shadow-emerald-500/10 transition-all flex flex-col justify-between";
+        badgeM1.className = "text-[10px] font-mono font-medium px-2 py-0.5 rounded bg-slate-800 text-slate-400";
+        badgeM1.innerText = "STANDBY";
+        badgeM2.className = "text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-500 text-white";
+        badgeM2.innerText = "ACTIVE IN MODEL";
+        btnM1.className = "w-full py-1.5 px-3 rounded-lg text-xs font-semibold bg-dark-800 hover:bg-brand-600 text-slate-200 hover:text-white transition";
+        btnM1.innerText = "Switch to Revenue Weighted Method";
+        btnM2.className = "w-full py-1.5 px-3 rounded-lg text-xs font-semibold bg-emerald-600 text-white cursor-default";
+        btnM2.innerText = "Active Selection";
+      }
+
+      const diffMonthly = d.ohRevenue - d.ohHours;
+      const diffAnnual = diffMonthly * 12;
+      const marginImpactPct = (Math.abs(diffMonthly) / d.price) * 100;
+
+      const diffMonthlyEl = document.getElementById('ovh-diff-monthly');
+      const diffAnnualEl = document.getElementById('ovh-diff-annual');
+      const diffMarginEl = document.getElementById('ovh-diff-margin');
+      const narrativeEl = document.getElementById('ovh-diff-narrative');
+
+      if (diffMonthly >= 0) {
+        diffMonthlyEl.innerText = `+${fmt(diffMonthly)} EGP`;
+        diffMonthlyEl.className = "font-mono text-base font-bold text-emerald-400";
+        diffAnnualEl.innerText = `+${fmt(diffAnnual)} EGP`;
+        diffMarginEl.innerText = `+${fmtDec(marginImpactPct, 2)}% EBITDA Advantage`;
+        diffMarginEl.className = "font-mono text-base font-bold text-emerald-400";
+        narrativeEl.innerHTML = `Method 2 (Operational DLH) allocates <b class="text-white">${fmt(diffMonthly)} EGP/month less</b> overhead than Method 1, giving your tender a <b class="text-emerald-400">${fmtDec(marginImpactPct, 2)}% EBITDA margin boost</b> to maximize bid win probability.`;
+      } else {
+        diffMonthlyEl.innerText = `${fmt(diffMonthly)} EGP`;
+        diffMonthlyEl.className = "font-mono text-base font-bold text-amber-400";
+        diffAnnualEl.innerText = `${fmt(diffAnnual)} EGP`;
+        diffMarginEl.innerText = `-${fmtDec(marginImpactPct, 2)}% Margin Spread`;
+        diffMarginEl.className = "font-mono text-base font-bold text-amber-400";
+        narrativeEl.innerHTML = `Due to expanded cleaner headcount (${d.totCleaners} staff), Method 2 allocates <b class="text-white">${fmt(Math.abs(diffMonthly))} EGP/month more</b> overhead than Method 1. Method 1 caps corporate SG&A absorption at <b class="text-brand-400">3.78%</b> of revenue.`;
+      }
+    }
+
+    function renderCostTable(data) {
+      const items = [
+        { name: 'Direct Labor & Statutory Social Charges', val: data.totalLaborCost, type: 'Variable / Relief' },
+        { name: 'Personnel Transportation Logistics', val: data.transCost, type: 'Semi-Variable' },
+        { name: 'Heavy Machinery Capex Amortization', val: data.machDeprec, type: 'Fixed Capex' },
+        { name: 'Equipment Preventive Maintenance Pool', val: data.machMaint, type: 'Direct Fixed' },
+        { name: 'Chemicals & Cleaning Consumables Pool', val: data.consumables, type: 'Direct Variable' },
+        { name: 'Corporate Administrative Overhead SG&A', val: data.overheadCost, type: 'Indirect Fixed' },
+      ];
+
+      let html = '';
+      items.forEach(it => {
+        const pct = (it.val / data.totalCostMonthly) * 100;
+        const perUnit = it.val / data.totalHeadcount;
+        html += `
+          <tr class="hover:bg-dark-850/70 transition border-b border-slate-800">
+            <td class="py-2.5 px-4 font-sans text-white font-semibold table-text-main">${it.name}</td>
+            <td class="py-2.5 px-4 text-right text-white font-bold table-val-bold">${fmt(it.val)}</td>
+            <td class="py-2.5 px-4 text-right text-slate-300 table-val-muted font-medium">${fmtDec(pct)}%</td>
+            <td class="py-2.5 px-4 text-right text-brand-400 font-bold table-val-accent">${fmt(perUnit)} EGP</td>
+            <td class="py-2.5 px-4 font-sans"><span class="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-200 text-[10px] font-semibold badge-print">${it.type}</span></td>
+          </tr>
+        `;
+      });
+      document.getElementById('tbl-cost-breakdown').innerHTML = html;
+    }
+
+    function renderMultiYearTable(d) {
+      const rows = [
+        { name: 'Gross Billed Revenue', y0: '-', y1: fmt(d.yr1Rev), y2: fmt(d.yr2Rev), y3: fmt(d.yr3Rev), tot: fmt(d.yr1Rev + d.yr2Rev + d.yr3Rev), hl: true },
+        { name: 'Operating Cash Expenses', y0: '-', y1: `(${fmt(d.yr1CashExpenses)})`, y2: `(${fmt(d.yr2CashExpenses)})`, y3: `(${fmt(d.yr3CashExpenses)})`, tot: `(${fmt(d.yr1CashExpenses + d.yr2CashExpenses + d.yr3CashExpenses)})`, hl: false },
+        { name: 'Contract EBITDA', y0: '-', y1: fmt(d.yr1Ebitda), y2: fmt(d.yr2Ebitda), y3: fmt(d.yr3Ebitda), tot: fmt(d.yr1Ebitda + d.yr2Ebitda + d.yr3Ebitda), hl: true },
+        { name: 'Capex Depreciation (Non-Cash)', y0: '-', y1: `(${fmt(d.yr1Deprec)})`, y2: `(${fmt(d.yr2Deprec)})`, y3: `(${fmt(d.yr3Deprec)})`, tot: `(${fmt(d.yr1Deprec * 3)})`, hl: false },
+        { name: 'Income Tax Provision (22.5%)', y0: '-', y1: `(${fmt(d.yr1Tax)})`, y2: `(${fmt(d.yr2Tax)})`, y3: `(${fmt(d.yr3Tax)})`, tot: `(${fmt(d.yr1Tax + d.yr2Tax + d.yr3Tax)})`, hl: false },
+        { name: 'Initial Capex Investment', y0: `(${fmt(Math.abs(d.cf0))})`, y1: '-', y2: '-', y3: '-', tot: `(${fmt(Math.abs(d.cf0))})`, hl: false },
+        { name: 'Terminal Salvage Value (30%)', y0: '-', y1: '-', y2: '-', y3: fmt(d.salvageVal), tot: fmt(d.salvageVal), hl: false },
+        { name: 'Free Cash Flow to Firm (FCFF)', y0: `(${fmt(Math.abs(d.cf0))})`, y1: fmt(d.cf1), y2: fmt(d.cf2), y3: fmt(d.cf3), tot: fmt(d.cf0 + d.cf1 + d.cf2 + d.cf3), hl: true }
+      ];
+
+      let html = '';
+      rows.forEach(r => {
+        const cls = r.hl ? 'text-white font-bold bg-dark-850/50' : 'text-slate-200';
+        html += `
+          <tr class="hover:bg-dark-850/70 transition ${cls} border-b border-slate-800">
+            <td class="py-2.5 px-4 font-sans font-semibold text-white">${r.name}</td>
+            <td class="py-2.5 px-4 text-right text-slate-400">${r.y0}</td>
+            <td class="py-2.5 px-4 text-right font-medium">${r.y1}</td>
+            <td class="py-2.5 px-4 text-right font-medium">${r.y2}</td>
+            <td class="py-2.5 px-4 text-right font-medium">${r.y3}</td>
+            <td class="py-2.5 px-4 text-right font-bold text-brand-400">${r.tot}</td>
+          </tr>
+        `;
+      });
+      document.getElementById('tbl-multiyear-pnl').innerHTML = html;
+    }
+
+    function renderRateCards(d) {
+      const mk = 1 + (d.markupPct / 100.0);
+      const netMk = 1 + (d.netMarginPct / 100.0);
+
+      const fixedPerHead = (d.fixedCostsMonthly + d.taxMonthly) / d.baseHeadcount;
+      const clnVar = d.totalWorkerCost / d.reqCleaners;
+      const supVar = d.totalSupCost / d.reqSupervisors;
+      const mgrVar = d.totalMgrCost / d.reqManagers;
+
+      const clnUnitem = (clnVar + fixedPerHead) * netMk;
+      const supUnitem = (supVar + fixedPerHead) * netMk;
+      const mgrUnitem = (mgrVar + fixedPerHead) * netMk;
+      
+      document.getElementById('card-cleaner-unitem').innerText = fmt(clnUnitem) + ' EGP';
+      document.getElementById('card-sup-unitem').innerText = fmt(supUnitem) + ' EGP';
+      document.getElementById('card-mgr-unitem').innerText = fmt(mgrUnitem) + ' EGP';
+      document.getElementById('card-total-unitem').innerText = fmt(d.price) + ' EGP';
+
+      document.getElementById('prt-cleaner-unitem').innerText = fmt(clnUnitem) + ' EGP';
+      document.getElementById('prt-sup-unitem').innerText = fmt(supUnitem) + ' EGP';
+      document.getElementById('prt-mgr-unitem').innerText = fmt(mgrUnitem) + ' EGP';
+      document.getElementById('prt-tot-unitem').innerText = fmt(d.price) + ' EGP';
+
+      const clnLabor = clnVar * mk;
+      const supLabor = supVar * mk;
+      const mgrLabor = mgrVar * mk;
+      document.getElementById('card-cleaner-labor').innerText = fmt(clnLabor) + ' EGP';
+      document.getElementById('card-sup-labor').innerText = fmt(supLabor) + ' EGP';
+      document.getElementById('card-mgr-labor').innerText = fmt(mgrLabor) + ' EGP';
+      document.getElementById('card-total-labor').innerText = fmt(d.totalLaborCost * mk) + ' EGP';
+
+      document.getElementById('prt-cleaner-labor').innerText = fmt(clnLabor) + ' EGP';
+      document.getElementById('prt-sup-labor').innerText = fmt(supLabor) + ' EGP';
+      document.getElementById('prt-mgr-labor').innerText = fmt(mgrLabor) + ' EGP';
+      document.getElementById('prt-tot-labor').innerText = fmt(d.totalLaborCost * mk) + ' EGP';
+
+      document.getElementById('card-item-labor').innerText = fmt(d.totalLaborCost * mk) + ' EGP';
+      document.getElementById('card-item-trans').innerText = fmt(d.transCost * mk) + ' EGP';
+      document.getElementById('card-item-mach').innerText = fmt((d.machDeprec + d.machMaint) * mk) + ' EGP';
+      document.getElementById('card-item-mat').innerText = fmt(d.consumables * mk) + ' EGP';
+      document.getElementById('card-item-oh').innerText = fmt(d.overheadCost * mk) + ' EGP';
+      document.getElementById('card-total-itemized').innerText = fmt(d.price) + ' EGP';
+
+      document.getElementById('prt-item-labor').innerText = fmt(d.totalLaborCost * mk) + ' EGP';
+      document.getElementById('prt-item-trans').innerText = fmt(d.transCost * mk) + ' EGP';
+      document.getElementById('prt-item-mach').innerText = fmt((d.machDeprec + d.machMaint) * mk) + ' EGP';
+      document.getElementById('prt-tot-itemized').innerText = fmt(d.price) + ' EGP';
+    }
+
+    function updateCharts(d) {
+      if (chartCost) chartCost.destroy();
+      const ctxCost = document.getElementById('chartCostStructure').getContext('2d');
+      chartCost = new Chart(ctxCost, {
+        type: 'doughnut',
+        data: {
+          labels: ['Labor & Social', 'Logistics', 'Machinery Capex', 'Maintenance', 'Consumables', 'SG&A Overhead'],
+          datasets: [{
+            data: [d.totalLaborCost, d.transCost, d.machDeprec, d.machMaint, d.consumables, d.overheadCost],
+            backgroundColor: ['#0ea5e9', '#38bdf8', '#6366f1', '#a855f7', '#ec4899', '#64748b'],
+            borderWidth: 0,
+            hoverOffset: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'right', labels: { boxWidth: 12, color: '#cbd5e1', font: { family: 'Inter', size: 11, weight: '500' } } },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => ` ${ctx.label}: ${fmt(ctx.raw)} EGP (${fmtDec((ctx.raw/d.price)*100)}% of Rev)`
+              }
+            }
+          },
+          cutout: '70%'
+        }
+      });
+
+      if (chartBEP) chartBEP.destroy();
+      const ctxBEP = document.getElementById('chartBreakEven').getContext('2d');
+      const workerPoints = [0, 10, 20, Math.round(d.bepWorkers), d.baseHeadcount, Math.round(d.baseHeadcount * 1.3)];
+      workerPoints.sort((a,b) => a-b);
+      const revPoints = workerPoints.map(w => w * d.revPerWorker);
+      const costPoints = workerPoints.map(w => d.fixedCostsMonthly + (w * d.varCostPerWorker));
+
+      chartBEP = new Chart(ctxBEP, {
+        type: 'line',
+        data: {
+          labels: workerPoints.map(w => `${w} W`),
+          datasets: [
+            {
+              label: 'Total Revenue (EGP)',
+              data: revPoints,
+              borderColor: '#10b981',
+              backgroundColor: 'rgba(16, 185, 129, 0.08)',
+              fill: true,
+              tension: 0.1,
+              pointRadius: 4
+            },
+            {
+              label: 'Total Operating Cost (EGP)',
+              data: costPoints,
+              borderColor: '#ef4444',
+              backgroundColor: 'rgba(239, 68, 68, 0.08)',
+              fill: true,
+              tension: 0.1,
+              pointRadius: 4
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'top', labels: { boxWidth: 12, color: '#cbd5e1', font: { family: 'Inter', size: 11, weight: '500' } } }
+          },
+          scales: {
+            x: { grid: { color: '#1e293b' }, ticks: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 10 } } },
+            y: { grid: { color: '#1e293b' }, ticks: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 10 }, callback: (v) => (v/1000)+'k' } }
+          }
+        }
+      });
+
+      if (chartMY) chartMY.destroy();
+      const ctxMY = document.getElementById('chartMultiYear').getContext('2d');
+      chartMY = new Chart(ctxMY, {
+        type: 'bar',
+        data: {
+          labels: ['Year 1', 'Year 2', 'Year 3'],
+          datasets: [
+            { label: 'Billed Revenue', data: [d.yr1Rev, d.yr2Rev, d.yr3Rev], backgroundColor: '#0ea5e9', borderRadius: 6 },
+            { label: 'Operating Expenses', data: [d.yr1CashExpenses, d.yr2CashExpenses, d.yr3CashExpenses], backgroundColor: '#475569', borderRadius: 6 },
+            { label: 'EBITDA', data: [d.yr1Ebitda, d.yr2Ebitda, d.yr3Ebitda], backgroundColor: '#10b981', borderRadius: 6 }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'top', labels: { boxWidth: 12, color: '#cbd5e1', font: { family: 'Inter', size: 11, weight: '500' } } },
+            tooltip: { callbacks: { label: (c) => ` ${c.dataset.label}: ${fmtM(c.raw)} EGP` } }
+          },
+          scales: {
+            x: { grid: { color: '#1e293b' }, ticks: { color: '#cbd5e1', font: { family: 'Inter', weight: '600' } } },
+            y: { grid: { color: '#1e293b' }, ticks: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 10 }, callback: (v) => (v/1000000)+'M' } }
+          }
+        }
+      });
+    }
+
+    function runMonteCarlo() {
+      const { cf1, cf2, cf3, capex, wacc } = currentModelState;
+      const meanCF = (cf1 + cf2 + cf3) / 3.0;
+      const sdCF = meanCF * 0.18;
+      const runs = 1000;
+      const npvResults = [];
+
+      for (let i = 0; i < runs; i++) {
+        const u1 = Math.random() || 0.0001, u2 = Math.random();
+        const u3 = Math.random() || 0.0001, u4 = Math.random();
+        const u5 = Math.random() || 0.0001, u6 = Math.random();
+
+        const z0 = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2);
+        const z1 = Math.sqrt(-2.0 * Math.log(u3)) * Math.cos(2.0 * Math.PI * u4);
+        const z2 = Math.sqrt(-2.0 * Math.log(u5)) * Math.cos(2.0 * Math.PI * u6);
+        
+        const simCF1 = meanCF + z0 * sdCF;
+        const simCF2 = meanCF + z1 * sdCF;
+        const simCF3 = meanCF + z2 * sdCF;
+
+        const simNPV = -capex + simCF1 / (1 + wacc) + simCF2 / Math.pow(1 + wacc, 2) + simCF3 / Math.pow(1 + wacc, 3);
+        npvResults.push(simNPV);
+      }
+
+      npvResults.sort((a, b) => a - b);
+      const meanNPV = npvResults.reduce((a, b) => a + b, 0) / runs;
+      const p50NPV = npvResults[Math.floor(runs * 0.50)];
+      const p05NPV = npvResults[Math.floor(runs * 0.05)];
+      const losses = npvResults.filter(v => v < 0).length;
+
+      document.getElementById('mc-mean-npv').innerText = fmtM(meanNPV) + ' EGP';
+      document.getElementById('mc-p50-npv').innerText = fmtM(p50NPV) + ' EGP';
+      document.getElementById('mc-var-npv').innerText = fmtM(p05NPV) + ' EGP';
+      document.getElementById('mc-loss-prob').innerText = ((losses / runs) * 100).toFixed(2) + '%';
+
+      const numBins = 25;
+      const minVal = npvResults[0];
+      const maxVal = npvResults[runs-1];
+      const binWidth = (maxVal - minVal) / numBins;
+      const bins = Array(numBins).fill(0);
+      const binLabels = [];
+
+      for (let b = 0; b < numBins; b++) {
+        binLabels.push(fmtM(minVal + b * binWidth));
+      }
+
+      npvResults.forEach(v => {
+        const binIdx = Math.min(numBins - 1, Math.floor((v - minVal) / binWidth));
+        bins[binIdx]++;
+      });
+
+      if (chartMC) chartMC.destroy();
+      const ctxMC = document.getElementById('chartMonteCarlo').getContext('2d');
+      chartMC = new Chart(ctxMC, {
+        type: 'bar',
+        data: {
+          labels: binLabels,
+          datasets: [{
+            label: 'Simulated NPV Frequency (1,000 Iterations)',
+            data: bins,
+            backgroundColor: bins.map((_, i) => (minVal + i * binWidth < 0) ? '#ef4444' : '#0ea5e9'),
+            borderRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'top', labels: { color: '#cbd5e1', font: { family: 'Inter', size: 11 } } },
+            tooltip: { callbacks: { label: (c) => ` Frequency: ${c.raw} runs` } }
+          },
+          scales: {
+            x: { grid: { color: '#1e293b' }, ticks: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 9 }, maxRotation: 45 } },
+            y: { grid: { color: '#1e293b' }, ticks: { color: '#94a3b8' } }
+          }
+        }
+      });
+    }
+
+    function switchTab(tabId) {
+      ['dashboard', 'pnl', 'ratecard', 'montecarlo'].forEach(t => {
+        document.getElementById(`pane-${t}`).classList.add('hidden');
+        document.getElementById(`tab-btn-${t}`).className = "px-3 py-1.5 rounded-md text-slate-300 hover:text-white transition-all";
+      });
+      document.getElementById(`pane-${tabId}`).classList.remove('hidden');
+      document.getElementById(`tab-btn-${tabId}`).className = "px-3 py-1.5 rounded-md bg-brand-600 text-white shadow transition-all";
+      
+      if (tabId === 'montecarlo') {
+        runMonteCarlo();
+      }
+    }
+
+    function resetDefaults() {
+      document.getElementById('inp-price').value = 930000;
+      document.getElementById('inp-cleaners').value = 36;
+      document.getElementById('inp-supervisors').value = 5;
+      document.getElementById('inp-managers').value = 1;
+      document.getElementById('chk-relief').checked = true;
+      document.getElementById('sel-insurance').value = 'full';
+      document.getElementById('sel-overhead').value = 'revenue';
+      document.getElementById('inp-inflation').value = 15;
+      document.getElementById('inp-escalation').value = 10;
+      document.getElementById('inp-wacc').value = 45.75;
+      
+      ['aggressive', 'conservative', 'defense'].forEach(p => {
+        document.getElementById(`btn-pre-${p}`).className = "px-2 py-1.5 rounded-lg bg-dark-850 hover:bg-slate-800 text-[11px] font-medium text-slate-200 border border-slate-700/80 hover:text-white transition text-center leading-tight";
+      });
+
+      calculateModel();
+    }
+
+    ['inp-price', 'inp-cleaners', 'inp-supervisors', 'inp-managers', 'chk-relief', 'sel-insurance', 'sel-overhead', 'inp-inflation', 'inp-escalation', 'inp-wacc']
+      .forEach(id => {
+        document.getElementById(id).addEventListener('input', calculateModel);
+      });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      calculateModel();
+    });
+  </script>
+</body>
+</html>
